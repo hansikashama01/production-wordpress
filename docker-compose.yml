@@ -12,35 +12,27 @@ services:
       - /opt/www/mysql:/var/lib/mysql
     networks:
       - wp_net
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 20
 
   wordpress:
     image: wordpress:php8.2-apache
     container_name: wp_app
     restart: unless-stopped
     depends_on:
-      db:
-        condition: service_healthy
+      - db
+    ports:
+      - "8080:80"
     environment:
       WORDPRESS_DB_HOST: db:3306
       WORDPRESS_DB_NAME: wordpress
       WORDPRESS_DB_USER: wordpress
       WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_CONFIG_EXTRA: |
+        define('WP_HOME','http://%{SERVER_IP}%');
+        define('WP_SITEURL','http://%{SERVER_IP}%');
     volumes:
       - /opt/www/wordpress:/var/www/html
     networks:
       - wp_net
-    ports:
-      - "8080:80"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 20
 
   wpcli:
     image: wordpress:cli
@@ -53,9 +45,7 @@ services:
     working_dir: /var/www/html
     networks:
       - wp_net
-    user: "33:33"
 
 networks:
   wp_net:
     name: wordpress-network
-    external: true
