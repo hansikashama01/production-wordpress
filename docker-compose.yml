@@ -44,6 +44,18 @@ services:
       timeout: 5s
       retries: 15
 
+  wpcli:
+    image: wordpress:cli
+    container_name: wp_cli
+    depends_on:
+      - wordpress
+      - db
+    volumes:
+      - /opt/www/wordpress:/var/www/html
+    working_dir: /var/www/html
+    networks:
+      - wp_net
+
   varnish:
     image: varnish:7.5
     container_name: wp_varnish
